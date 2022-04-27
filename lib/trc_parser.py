@@ -35,24 +35,39 @@ class trc:
                 frame_tmp.append([marker_name_memory, self.Channels[j], tmp_cont[j]])
             self.Motion.append([tmp_cont[1], frame_tmp])
 
-    def trajectory(self):
+    def trajectory(self, start, end):
         """
         Changes data type rom string to float, channels contains ordered list of marker names and channels.
         Note: if marker is missing from frame the list is shortened for given frame
         :return: list of lists of floats, list of [marker name, channel]
         """
-        trajectory = []
-        channels = []
-        for j in range(len(self.Motion)):
-            frame = self.Motion[j]
-            frame_values = []
-            valid_channels = []
-            for i in range(len(frame[1])):
-                if frame[1][i][2] is not '':
-                    tmp = float(frame[1][i][2])
-                    frame_values.append(tmp)
-                    valid_channels.append([frame[1][i][0], frame[1][i][1]])
-            trajectory.append(frame_values)
-            channels.append(valid_channels)
-        return trajectory, channels
+        if end == -1:
+            end = len(self.Motion)
+        if (0 <= start < end) and end <= len(self.Motion):
+            trajectory = []
+            channels = []
+
+            invalid_channels = []
+            for j in range(start, end):
+                frame = self.Motion[j]
+                for channel in frame[1]:
+                    if channel[2] == '':
+                        invalid_channels.append(channel[0])
+
+            invalid_channels = set(invalid_channels)
+            print(invalid_channels)
+
+            for j in range(start, end):
+                frame = self.Motion[j]
+                frame_values = []
+                for i in range(len(frame[1])):
+                    if frame[1][i][0] not in invalid_channels:
+                        tmp = float(frame[1][i][2])
+                        frame_values.append(tmp)
+                        if j == start:
+                            channels.append([frame[1][i][0], [frame[1][i][1]]])
+                trajectory.append(frame_values)
+            return trajectory, channels
+        else:
+            print('start or end is wrong.')
 
