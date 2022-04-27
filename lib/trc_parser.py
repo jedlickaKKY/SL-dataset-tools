@@ -66,7 +66,7 @@ class trc:
                         tmp = float(frame[1][i][2])
                         frame_values.append(tmp)
                         if j == start:
-                            channels.append([frame[1][i][0], [frame[1][i][1]]])
+                            channels.append([frame[1][i][0], frame[1][i][1]])
                 trajectory.append(frame_values)
             return np.array(trajectory), channels
         else:
