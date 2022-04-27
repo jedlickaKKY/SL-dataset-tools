@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 class trc:
     def __init__(self, trc_file):
@@ -67,7 +68,7 @@ class trc:
                         if j == start:
                             channels.append([frame[1][i][0], [frame[1][i][1]]])
                 trajectory.append(frame_values)
-            return trajectory, channels
+            return np.array(trajectory), channels
         else:
             print('start or end is wrong.')
 
