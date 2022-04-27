@@ -24,12 +24,12 @@ class trc:
         self.MarkerNames = cont[3].rstrip('\n').split('\t')
         self.Channels = cont[4].rstrip('\n').split('\t')
 
-        val = [a for a in cont[5].rstrip('\n').split('\t')[2:] if a is not '']
+        # val = [a for a in cont[5].rstrip('\n').split('\t')[2:] if a is not '']
         self.Motion = []
         for i in range(int(self.NumFrames)):
             tmp_cont = cont[5+i].rstrip('\n').split('\t')  # 5 is first data line Structure: Frame#, Time, MarkerName1, '', '' MarkerName2, ...
             frame_tmp = []
-            for j in range(2, len(val)+2):
+            for j in range(2, len(tmp_cont)):
                 if self.MarkerNames[j] is not '':
                     marker_name_memory = self.MarkerNames[j]
                 frame_tmp.append([marker_name_memory, self.Channels[j], tmp_cont[j]])
