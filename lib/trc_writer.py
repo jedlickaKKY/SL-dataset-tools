@@ -26,5 +26,6 @@ def write_trc(trc_file, trc_data, trajectory, channels, startFrameNumber=1):
                 line += '\t'
         line = line[:-2] + '\n'
         content.append(line)
+
     with open(trc_file, 'w') as f:
         f.writelines(content)

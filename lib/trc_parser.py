@@ -25,7 +25,6 @@ class trc:
         self.MarkerNames = cont[3].rstrip('\n').split('\t')
         self.Channels = cont[4].rstrip('\n').split('\t')
 
-        # val = [a for a in cont[5].rstrip('\n').split('\t')[2:] if a is not '']
         self.Motion = []
         for i in range(int(self.NumFrames)):
             tmp_cont = cont[5+i].rstrip('\n').split('\t')  # 5 is first data line Structure: Frame#, Time, MarkerName1, '', '' MarkerName2, ...
@@ -56,7 +55,6 @@ class trc:
                         invalid_channels.append(channel[0])
 
             invalid_channels = set(invalid_channels)
-            print(invalid_channels)
 
             for j in range(start, end):
                 frame = self.Motion[j]
@@ -70,5 +68,5 @@ class trc:
                 trajectory.append(frame_values)
             return np.array(trajectory), channels
         else:
-            print('start or end is wrong.')
+            print('start or end is out of bounds.')
 
