@@ -38,6 +38,15 @@ def compare(trajectory1, channel_list1, trajectory2, channel_list2):
 
 
 def query(query, target_trc, channels_query, topN=-1, delta=[-2, 2]):
+    """
+    Finds best matching sign (query) in trc file.
+    :param query: trajectory NxM
+    :param target_trc: file name
+    :param channels_query: list of channels len M
+    :param topN: return topN results
+    :param delta: difference in length of searched item compared to query
+    :return: topN results
+    """
     pars = trc_parser.trc(target_trc)
     trajectory_long, channels_long = pars.trajectory(0, -1)
 
