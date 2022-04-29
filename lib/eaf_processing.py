@@ -1,5 +1,3 @@
-import os
-
 def EAF_parse(eaf_file_name):
     with open(eaf_file_name, 'r') as f:
         tmp = f.readlines()
@@ -55,25 +53,4 @@ def annotation2signs(_annotation, custom_tiers=None):
 def process_eaf(eaf_file):
     read_annot = EAF_parse(eaf_file)
     timed_annotations = annotation2signs(read_annot)
-    # sorted_annotace = sorted(read_anotace, key=lambda x: x[0])
-    # for item in timed_annotation:
-    #     print(item)
     return timed_annotations
-
-# if __name__ == "__main__":
-#     global_path = '/home/jedle/data/ELG/anotace/'
-#     selected_dictionary = '2021-06-18-Pocasi_Filip'
-#     selected_file = '2016_10_02_b.NN.eaf'
-#
-#     # bvh_sync = 110
-#     # vid_sync = 1.317
-#
-#     tmp_eaf = os.path.join(global_path, selected_dictionary,selected_file)
-#     read_anotace = EAF_parse(tmp_eaf)
-#
-#     timed_annotation = annotation2signs(read_anotace)
-#     sorted_annotace = sorted(read_anotace, key=lambda x: x[0])
-#     for item in timed_annotation:
-#         print(item)
-
-
