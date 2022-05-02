@@ -14,21 +14,26 @@ def read_time_synchro_file(file_path, synchro_take):
     searched_synchro = [s for s in synchro_list if (s[0] == synchro_take[0] and s[1] == synchro_take[1][:-3])]
     if not searched_synchro:
         return -1
+    if searched_synchro[0][4] == '':
+        return -1
     return searched_synchro[0]
 
 
 def recalculate_time_stamps(synchro, in_time, in_units='ms', out_fps=100):
-    if in_units == 'ms':
-        in_units2seconds = 0.001
+    if synchro[5] != '':
+        if in_units == 'ms':
+            in_units2seconds = 0.001
+        else:
+            print('Bad units!')
+
+        ts = float(synchro[5].replace(',','.'))
+        fs = int(synchro[4])
+
+        out_time = ((np.asarray(in_time)*in_units2seconds - ts) * out_fps + fs).astype(int)
+
+        return out_time
     else:
-        print('Bad units!')
-
-    ts = float(synchro[5].replace(',','.'))
-    fs = int(synchro[4])
-
-    out_time = ((np.asarray(in_time)*in_units2seconds - ts) * out_fps + fs).astype(int)
-
-    return out_time
+        return -1
 
 
 if __name__ == '__main__':
@@ -39,17 +44,17 @@ if __name__ == '__main__':
     time_synchro_file = os.path.join(glo_path, 'synchro.txt')
     dictionary_file = os.path.join(glo_path, 'dict.pkl')
 
-    signer = 'PK'
-    cleaner = 'PJ'
+    signer = 'FB'
+    cleaner = 'TZ'
 
-    load_dictionary = False
+    load_dictionary = True
     if load_dictionary:
         the_dict = sign_dictionary.load_dictionary(dictionary_file)
     else:
         the_dict = []
 
     # mocap_session_list = os.listdir(mocap_path)
-    mocap_session_list = ['2021-06-24-ELG-WF-PK']
+    mocap_session_list = ['2021-06-18-ELG-WF-FB']
     # print(mocap_session_list)
 
     for session in mocap_session_list:
