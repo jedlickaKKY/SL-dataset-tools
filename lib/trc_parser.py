@@ -35,7 +35,7 @@ class trc:
                 frame_tmp.append([marker_name_memory, self.Channels[j], tmp_cont[j]])
             self.Motion.append([tmp_cont[1], frame_tmp])
 
-    def trajectory(self, start=0, end=-1):
+    def trajectory(self, start=0, end=-1, normalize=''):
         """
         Changes data type rom string to float, channels contains ordered list of marker names and channels.
         Note: if marker is missing from frame the list is shortened for given frame
@@ -66,7 +66,23 @@ class trc:
                         if j == start:
                             channels.append([frame[1][i][0], frame[1][i][1]])
                 trajectory.append(frame_values)
-            return np.array(trajectory), channels
+            trajectory_array = np.array(trajectory)
+
+            if normalize != '':
+                x_zero = [i for i, ch in enumerate(channels) if normalize in ch and 'X' in ch[1]]
+                y_zero = [i for i, ch in enumerate(channels) if normalize in ch and 'Y' in ch[1]]
+                z_zero = [i for i, ch in enumerate(channels) if normalize in ch and 'Z' in ch[1]]
+
+                x_coords = [i for i, ch in enumerate(channels) if 'X' in ch[1]]
+                y_coords = [i for i, ch in enumerate(channels) if 'Y' in ch[1]]
+                z_coords = [i for i, ch in enumerate(channels) if 'Z' in ch[1]]
+
+                for i in range(len(x_zero)):
+                    trajectory_array[:, x_coords] = trajectory_array[:, x_coords] - trajectory_array[:, x_zero]
+                    trajectory_array[:, y_coords] = trajectory_array[:, y_coords] - trajectory_array[:, y_zero]
+                    trajectory_array[:, z_coords] = trajectory_array[:, z_coords] - trajectory_array[:, z_zero]
+
+            return trajectory_array, channels
         else:
             print('start or end is out of bounds.')
 
