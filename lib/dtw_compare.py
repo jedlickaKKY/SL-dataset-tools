@@ -1,9 +1,15 @@
 import numpy as np
 import fastdtw
 import sys
-from lib import trc_parser
+from lib import trc_parser, sign_dictionary
 
 def channels_compare(channels1, channels2):
+    """
+    Compares two channel list
+    :param channels1:
+    :param channels2:
+    :return: common channels
+    """
     match = []
     for item1 in channels1:
         for item2 in channels2:
@@ -14,6 +20,13 @@ def channels_compare(channels1, channels2):
 
 
 def remove_markers_from_trajectory(trajectory, channels, allowed_channels):
+    """
+    Reves channels that are not in list of allowed channels
+    :param trajectory:
+    :param channels:
+    :param allowed_channels:
+    :return:
+    """
     if len(channels) == len(allowed_channels):
         return trajectory, channels
     elif len(channels) > len(allowed_channels):
@@ -30,6 +43,14 @@ def remove_markers_from_trajectory(trajectory, channels, allowed_channels):
 
 
 def compare(trajectory1, channel_list1, trajectory2, channel_list2):
+    """
+    DTW comparison of trajectories. Channels that are not common for both are excluded.
+    :param trajectory1:
+    :param channel_list1:
+    :param trajectory2:
+    :param channel_list2:
+    :return:
+    """
     valid_channels = channels_compare(channel_list1, channel_list2)
     trajectory1, channel_list1 = remove_markers_from_trajectory(trajectory1, channel_list1, valid_channels)
     trajectory2, channel_list2 = remove_markers_from_trajectory(trajectory2, channel_list2, valid_channels)
@@ -67,3 +88,21 @@ def query(query, target_trc, channels_query, topN=-1, delta=[-2, 2]):
     sys.stdout.write('\r')
     result.sort(key=lambda x: x[2])
     return result[:topN]
+
+
+def annotation_matching(src_trc, target_trc, normalization=''):
+    """
+    Loads TRC files and runs comparison
+    :param src_trc:
+    :param target_trc:
+    :param normalization:
+    :return:
+    """
+    src_parser = trc_parser.trc(src_trc)
+    src_trajectory, src_channels = src_parser.trajectory(normalize=normalization)
+    target_parser = trc_parser.trc(target_trc)
+    target_trajectory, target_channels = target_parser.trajectory(normalize=normalization)
+
+    _, path = compare(src_trajectory, src_channels, target_trajectory, target_channels)
+
+    return path
