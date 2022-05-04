@@ -35,7 +35,7 @@ class trc:
                 frame_tmp.append([marker_name_memory, self.Channels[j], tmp_cont[j]])
             self.Motion.append([tmp_cont[1], frame_tmp])
 
-    def trajectory(self, start, end):
+    def trajectory(self, start=0, end=-1):
         """
         Changes data type rom string to float, channels contains ordered list of marker names and channels.
         Note: if marker is missing from frame the list is shortened for given frame
