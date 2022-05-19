@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def EAF_parse(eaf_file_name):
     with open(eaf_file_name, 'r') as f:
         tmp = f.readlines()
@@ -36,12 +39,12 @@ def annotation2signs(_annotation, custom_tiers=None):
         if line[2] == 'default':
             tmp_ts = [line[0], line[1]]
             new_item = {'time_stamps' : tmp_ts, 'default' : line[3]}
-        if line[2] == 'Right Hand':
+        if line[2] == 'Right hand':
             new_item['right_hand'] = line[3]
             rh_ts = [line[0], line[1]]
             if rh_ts != tmp_ts:
                 print('right hand has different time-stamps then default: {} vs {}'.format(rh_ts, tmp_ts))
-        if line[2] == 'Left Hand':
+        if line[2] == 'Left hand':
             new_item['left_hand'] = line[3]
             lh_ts = [line[0], line[1]]
             if lh_ts != tmp_ts:
@@ -54,3 +57,92 @@ def process_eaf(eaf_file):
     read_annot = EAF_parse(eaf_file)
     timed_annotations = annotation2signs(read_annot)
     return timed_annotations
+
+
+def EAF_write(eaf_reference_file, eaf_outfile, annotation, dictionary, media_orig, media_target):
+    with open(eaf_reference_file, 'r') as f:
+        src_eaf = f.readlines()
+    header = []
+    for i, line in enumerate(src_eaf):
+        if media_orig in line:
+            line = line.replace(media_orig, media_target)
+        header.append(line)
+        if '</HEADER>' in line:
+            break
+#     annotation = process_eaf(eaf_reference_file)
+#     dictionary = sign_dictionary.load_dictionary(dictionary_file)
+    tss = np.zeros(2*len(annotation))
+    default_tier = []
+    rh = []
+    lh = []
+    print(np.shape(tss))
+    for i, line in enumerate(annotation):
+        print('{} : {}'.format(line['default'], line['time_stamps']))
+        tss[2*i] = int(line['time_stamps'][0])
+        tss[2*i+1] = int(line['time_stamps'][1])
+        default_tier.append(line['default'])
+        if line['default'] == 'T':
+            rh.append('')
+            lh.append('')
+        elif line['default'] == 'transition':
+            rh.append('')
+            lh.append('')
+        else:
+            match = [d for d in dictionary if d['annot_default'] == line['default'] and media_orig.split('.')[0] in d['mocap_source_file']]
+            if len(match) < 1:
+                print(line)
+            else:
+#                 print(line)
+                anot = (match[0]['annot_default'])
+                if 'annot_right_hand' in match[0].keys():
+                    print('RH: {}'.format(match[0]['annot_right_hand']))
+                    rh.append(match[0]['annot_right_hand'])
+                else:
+                    rh.append('')    
+                if 'annot_left_hand' in match[0].keys():
+                    print('LH: {}'.format(match[0]['annot_left_hand']))
+                    lh.append(match[0]['annot_left_hand'])
+                else:
+                    lh.append('')
+    output_ts = ['    <TIME_ORDER>\n']
+    for i in range(len(tss)):
+        output_ts.append('        <TIME_SLOT TIME_SLOT_ID="ts{}" TIME_VALUE="{}"/>\n'.format(i+1, int(tss[i])))
+    output_ts.append('    </TIME_ORDER>\n')
+    output_def = ['    <TIER LINGUISTIC_TYPE_REF="default-lt" TIER_ID="default">\n']
+    output_rh = ['    <TIER LINGUISTIC_TYPE_REF="default-lt" TIER_ID="Right hand">\n']
+    output_lh = ['    <TIER LINGUISTIC_TYPE_REF="default-lt" TIER_ID="Left hand">\n']
+    alignment_incremetor = 1
+    for i, (line, r, l) in enumerate(zip(default_tier, rh, lh)):
+        output_def.append('        <ANNOTATION>\n')
+        output_def.append('            <ALIGNABLE_ANNOTATION ANNOTATION_ID="a{}"\n'.format(alignment_incremetor))
+        output_def.append('                TIME_SLOT_REF1="ts{}" TIME_SLOT_REF2="ts{}">\n'.format(2*i+1, 2*i+2))
+        output_def.append('                <ANNOTATION_VALUE>{}</ANNOTATION_VALUE>\n'.format(line))
+        output_def.append('            </ALIGNABLE_ANNOTATION>\n        </ANNOTATION>\n')
+        alignment_incremetor += 1
+        if r is not '':
+            output_rh.append('        <ANNOTATION>\n')
+            output_rh.append('            <ALIGNABLE_ANNOTATION ANNOTATION_ID="a{}"\n'.format(alignment_incremetor))
+            output_rh.append('                TIME_SLOT_REF1="ts{}" TIME_SLOT_REF2="ts{}">\n'.format(2*i+1, 2*i+2))
+            output_rh.append('                <ANNOTATION_VALUE>{}</ANNOTATION_VALUE>\n'.format(r))
+            output_rh.append('            </ALIGNABLE_ANNOTATION>\n')
+            output_rh.append('        </ANNOTATION>\n')
+            alignment_incremetor += 1
+        if l is not '':
+            output_lh.append('        <ANNOTATION>\n')
+            output_lh.append('            <ALIGNABLE_ANNOTATION ANNOTATION_ID="a{}"\n'.format(alignment_incremetor))
+            output_lh.append('                TIME_SLOT_REF1="ts{}" TIME_SLOT_REF2="ts{}">\n'.format(2*i+1, 2*i+2))
+            output_lh.append('                <ANNOTATION_VALUE>{}</ANNOTATION_VALUE>\n'.format(l))
+            output_lh.append('            </ALIGNABLE_ANNOTATION>\n')
+            output_lh.append('        </ANNOTATION>\n')
+            alignment_incremetor += 1
+    output_def.append('    </TIER>\n')
+    output_rh.append('    </TIER>\n')
+    output_lh.append('    </TIER>\n')
+    
+    end_statement = src_eaf[-10:]
+    
+    new_content = header+output_ts+output_def+output_rh+output_lh+end_statement
+   
+    with open(eaf_outfile, 'w') as f:
+        for line in new_content:
+            f.write(line)
