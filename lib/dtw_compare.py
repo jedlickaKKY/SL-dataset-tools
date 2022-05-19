@@ -106,3 +106,10 @@ def annotation_matching(src_trc, target_trc, normalization=''):
     _, path = compare(src_trajectory, src_channels, target_trajectory, target_channels)
 
     return path
+
+
+def match_annotation():
+    """
+    Matches annotation from one trc to other (same speech and speaker, different take)
+    """
+    return -1
