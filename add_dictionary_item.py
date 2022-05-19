@@ -42,12 +42,9 @@ if __name__ == '__main__':
     annot_path = os.path.join(path_root, 'ANNOT')
     glo_path = os.path.join(path_root, 'GLOBAL')
     time_synchro_file = os.path.join(glo_path, 'synchro.txt')
-    dictionary_file = os.path.join(glo_path, 'dict.pkl')
+    dictionary_file = os.path.join(glo_path, 'dict_tmp2.pkl')
 
-    signer = 'FB'
-    cleaner = 'TZ'
-
-    load_dictionary = True
+    load_dictionary = False
     if load_dictionary:
         the_dict = sign_dictionary.load_dictionary(dictionary_file)
     else:
@@ -55,7 +52,10 @@ if __name__ == '__main__':
 
     # mocap_session_list = os.listdir(mocap_path)
     mocap_session_list = ['2021-06-18-ELG-WF-FB']
-    # print(mocap_session_list)
+
+#     signer = 'FB'
+#     cleaner = 'TZ'
+
 
     for session in mocap_session_list:
         mocap_file_list = os.listdir(os.path.join(mocap_path, session))
@@ -75,7 +75,7 @@ if __name__ == '__main__':
                 tmp_annot = eaf_processing.process_eaf(tmp_annot_file_name)
 
                 synchro = read_time_synchro_file(time_synchro_file, [session, take_name])
-                # print(synchro)
+#                 print(synchro)
                 if synchro == -1:
                     print('synchro not found. skipping {}'.format(tmp_mocap_file))
                     continue
@@ -87,13 +87,13 @@ if __name__ == '__main__':
                     new_sign['sl_annotator'] = annotator_code
                     new_sign['video_time_stamp'] = line['time_stamps']
                     new_sign['mocap_time_stamp'] = recalculate_time_stamps(synchro, line['time_stamps'])
-                    new_sign['mocap_cleaner'] = cleaner
-                    new_sign['signer'] = signer
+                    new_sign['mocap_cleaner'] = synchro[6]
+                    new_sign['signer'] = session[-2:]
                     new_sign['annot_default'] = line['default']
                     if 'right_hand' in line.keys():
-                        new_sign['annot_left_hand'] = line['right_hand']
+                        new_sign['annot_right_hand'] = line['right_hand']
                     if 'left_hand' in line.keys():
-                        new_sign['annot_right_hand'] = line['left_hand']
+                        new_sign['annot_left_hand'] = line['left_hand']
                     new_sign['codified_meaning'] = ''
 
                     for dict_item in the_dict:
