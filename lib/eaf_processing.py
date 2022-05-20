@@ -2,6 +2,11 @@ import numpy as np
 
 
 def EAF_parse(eaf_file_name):
+    """
+
+    :param eaf_file_name:
+    :return:
+    """
     with open(eaf_file_name, 'r') as f:
         tmp = f.readlines()
     time_stamps = []
@@ -24,6 +29,12 @@ def EAF_parse(eaf_file_name):
 
 
 def annotation2signs(_annotation, custom_tiers=None):
+    """
+
+    :param _annotation:
+    :param custom_tiers:
+    :return:
+    """
     if custom_tiers:
         if len(custom_tiers) != 3:
             print('dim of tiers must be 3, using default tiers')
@@ -54,12 +65,27 @@ def annotation2signs(_annotation, custom_tiers=None):
 
 
 def process_eaf(eaf_file):
+    """
+    Reads EAF file and returns annotation
+    :param eaf_file:
+    :return:
+    """
     read_annot = EAF_parse(eaf_file)
     timed_annotations = annotation2signs(read_annot)
     return timed_annotations
 
 
 def EAF_write(eaf_reference_file, eaf_outfile, annotation, dictionary, media_orig, media_target):
+    """
+
+    :param eaf_reference_file:
+    :param eaf_outfile:
+    :param annotation:
+    :param dictionary:
+    :param media_orig:
+    :param media_target:
+    :return:
+    """
     with open(eaf_reference_file, 'r') as f:
         src_eaf = f.readlines()
     header = []
@@ -69,8 +95,6 @@ def EAF_write(eaf_reference_file, eaf_outfile, annotation, dictionary, media_ori
         header.append(line)
         if '</HEADER>' in line:
             break
-#     annotation = process_eaf(eaf_reference_file)
-#     dictionary = sign_dictionary.load_dictionary(dictionary_file)
     tss = np.zeros(2*len(annotation))
     default_tier = []
     rh = []
@@ -92,8 +116,6 @@ def EAF_write(eaf_reference_file, eaf_outfile, annotation, dictionary, media_ori
             if len(match) < 1:
                 print(line)
             else:
-#                 print(line)
-                anot = (match[0]['annot_default'])
                 if 'annot_right_hand' in match[0].keys():
                     print('RH: {}'.format(match[0]['annot_right_hand']))
                     rh.append(match[0]['annot_right_hand'])
