@@ -5,6 +5,75 @@ import pickle
 from lib import trc_parser, trc_writer, sign_dictionary, dtw_compare, eaf_processing
 
 
+def read_time_synchro_file(file_path, synchro_take):
+    with open(file_path, 'r') as f:
+        content = f.readlines()
+
+    synchro_list = []
+    for line in content:
+        tmp = line.strip().split('\t')
+        synchro_list.append(tmp)
+
+    searched_synchro = [s for s in synchro_list if (s[0] == synchro_take[0] and s[1] in synchro_take[1])]
+    if not searched_synchro:
+        return -1
+    if searched_synchro[0][4] == '':
+        return -1
+    return searched_synchro[0]
+
+
+def recalculate_time_stamps(synchro, in_time, in_units='ms', out_fps=100):
+    if len(synchro) > 2:
+        if synchro[5] != '':
+            if in_units == 'ms':
+                in_units2seconds = 0.001
+            else:
+                print('Bad units!')
+
+            ts = float(synchro[5].replace(',','.'))
+            fs = int(synchro[4])
+
+            out_time = ((np.asarray(in_time)*in_units2seconds - ts) * out_fps + fs).astype(int)
+
+            return out_time
+        else:
+            return -1
+
+        
+def create_dictionary(trc_path, mocap_session, eaf_path, synchro, dictionary):
+
+    the_dict = []
+    take_name = os.path.splitext(os.path.split(trc_path)[1])[0]
+    loaded_annot = eaf_processing.process_eaf(eaf_path)
+    session = mocap_session
+    synchro = read_time_synchro_file(synchro, [session, take_name[:-3]])
+
+    for line in loaded_annot:
+        new_sign = {}
+        new_sign['mocap_source_file'] = os.path.join(session, take_name)
+        new_sign['annot_file'] = os.path.join(session, os.path.splitext(eaf_path)[0])
+        # new_sign['sl_annotator'] = annotator_code
+        new_sign['video_time_stamp'] = line['time_stamps']
+        new_sign['mocap_time_stamp'] = recalculate_time_stamps(synchro, line['time_stamps'])
+        new_sign['mocap_cleaner'] = synchro[6]
+        new_sign['signer'] = session[-2:]
+        new_sign['annot_default'] = line['default']
+        if 'right_hand' in line.keys():
+            new_sign['annot_right_hand'] = line['right_hand']
+        if 'left_hand' in line.keys():
+            new_sign['annot_left_hand'] = line['left_hand']
+        new_sign['codified_meaning'] = ''
+
+        for dict_item in the_dict:
+            if (new_sign['mocap_source_file'] == dict_item['mocap_source_file']) \
+                    and (new_sign['mocap_time_stamp'] == dict_item['mocap_time_stamp']).all():
+                print('match found : {}'.format(new_sign))
+                continue
+        the_dict.append(new_sign)
+
+    sign_dictionary.save_dictionary(the_dict, dictionary)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Makes annotation based on template annotation and dtw matching of TRC files.')
     parser.add_argument('src_eaf', type=str, help='Template EAF file path')
@@ -31,7 +100,8 @@ if __name__ == '__main__':
     new_media_name = os.path.split(tar_trc)[1][:-7] + '.mp4'
     signer = tar_trc.split('.')[0][-2:]
 
-    os.system('python3 create_dict.py {} {} {} {} {}'.format(src_trc, session, src_eaf_file, synchro_file, dictionary_file))
+#     os.system('python3 create_dict.py {} {} {} {} {}'.format(src_trc, session, src_eaf_file, synchro_file, dictionary_file))
+    create_dictionary(src_trc, session, src_eaf_file, synchro_file, dictionary_file)
 
     dictionary = sign_dictionary.load_dictionary(dictionary_file)
     path = dtw_compare.annotation_matching(src_trc, tar_trc, normalization=normalize_data)
