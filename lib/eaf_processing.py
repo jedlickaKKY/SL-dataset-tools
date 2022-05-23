@@ -86,6 +86,7 @@ def EAF_write(eaf_reference_file, eaf_outfile, annotation, dictionary, media_ori
     :param media_target:
     :return:
     """
+
     with open(eaf_reference_file, 'r') as f:
         src_eaf = f.readlines()
     header = []
@@ -99,9 +100,9 @@ def EAF_write(eaf_reference_file, eaf_outfile, annotation, dictionary, media_ori
     default_tier = []
     rh = []
     lh = []
-    print(np.shape(tss))
+    # print(np.shape(tss))
     for i, line in enumerate(annotation):
-        print('{} : {}'.format(line['default'], line['time_stamps']))
+        # print('{} : {}'.format(line['default'], line['time_stamps']))
         tss[2*i] = int(line['time_stamps'][0])
         tss[2*i+1] = int(line['time_stamps'][1])
         default_tier.append(line['default'])
@@ -114,15 +115,16 @@ def EAF_write(eaf_reference_file, eaf_outfile, annotation, dictionary, media_ori
         else:
             match = [d for d in dictionary if d['annot_default'] == line['default'] and media_orig.split('.')[0] in d['mocap_source_file']]
             if len(match) < 1:
-                print(line)
+                pass
+                # print(line)
             else:
                 if 'annot_right_hand' in match[0].keys():
-                    print('RH: {}'.format(match[0]['annot_right_hand']))
+                    # print('RH: {}'.format(match[0]['annot_right_hand']))
                     rh.append(match[0]['annot_right_hand'])
                 else:
                     rh.append('')    
                 if 'annot_left_hand' in match[0].keys():
-                    print('LH: {}'.format(match[0]['annot_left_hand']))
+                    # print('LH: {}'.format(match[0]['annot_left_hand']))
                     lh.append(match[0]['annot_left_hand'])
                 else:
                     lh.append('')
