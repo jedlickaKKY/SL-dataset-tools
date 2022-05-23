@@ -1,4 +1,5 @@
 import os
+import argparse
 import numpy as np
 from lib import eaf_processing, sign_dictionary
 
@@ -37,25 +38,24 @@ def recalculate_time_stamps(synchro, in_time, in_units='ms', out_fps=100):
 
 
 if __name__ == '__main__':
-    path_root = '/home/jedle/data/ELG/DATABASE'
-    mocap_path = os.path.join(path_root, 'TRC')
-    annot_path = os.path.join(path_root, 'ANNOT')
-    glo_path = os.path.join(path_root, 'GLOBAL')
-    time_synchro_file = os.path.join(glo_path, 'synchro.txt')
-    dictionary_file = os.path.join(glo_path, 'dict_tmp2.pkl')
+    parser = argparse.ArgumentParser(description='Creates/appends dictionary from TRC and EAF annotation.')
+    parser.add_argument('root_path', type=str, help='Path to dictionary root', required=True)
+    parser.add_argument('synchro', type=str, help='Synchronization filename', required=True)
+    parser.add_argument('dictionary', type=str, help='Dictionary filename', required=True)
+    args = parser.parse_args()
+
+    mocap_path = os.path.join(args.root_path, 'TRC')
+    annot_path = os.path.join(args.root_path, 'ANNOT')
+    glo_path = os.path.join(args.root_path, 'GLOBAL')
+    time_synchro_file = os.path.join(glo_path, args.synchro)
+    dictionary_file = os.path.join(glo_path, args.dictionary)
+    mocap_session_list = os.listdir(mocap_path)
 
     load_dictionary = False
     if load_dictionary:
         the_dict = sign_dictionary.load_dictionary(dictionary_file)
     else:
         the_dict = []
-
-    # mocap_session_list = os.listdir(mocap_path)
-    mocap_session_list = ['2021-06-18-ELG-WF-FB']
-
-#     signer = 'FB'
-#     cleaner = 'TZ'
-
 
     for session in mocap_session_list:
         mocap_file_list = os.listdir(os.path.join(mocap_path, session))
